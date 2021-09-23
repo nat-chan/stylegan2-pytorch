@@ -4,9 +4,11 @@ import torch
 from torchvision import utils
 from model import Generator
 from tqdm import tqdm
+from pathlib import Path
 
 
-def generate(args, g_ema, device, mean_latent):
+def generate(args, g_ema, device, mean_latent, outdir="sample"):
+    Path(outdir).mkdir(exist_ok=True)
 
     with torch.no_grad():
         g_ema.eval()
@@ -19,7 +21,7 @@ def generate(args, g_ema, device, mean_latent):
 
             utils.save_image(
                 sample,
-                f"sample/{str(i).zfill(6)}.png",
+                f"{outdir}/{str(i).zfill(6)}.png",
                 nrow=1,
                 normalize=True,
                 range=(-1, 1),
@@ -62,6 +64,12 @@ if __name__ == "__main__":
         default=2,
         help="channel multiplier of the generator. config-f = 2, else = 1",
     )
+    parser.add_argument(
+        "--outdir",
+        type=str,
+        default="sample",
+        help="Where to save the output images",
+    )
 
     args = parser.parse_args()
 
@@ -81,4 +89,4 @@ if __name__ == "__main__":
     else:
         mean_latent = None
 
-    generate(args, g_ema, device, mean_latent)
+    generate(args, g_ema, device, mean_latent, args.outdir)
